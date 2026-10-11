@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glass Lotus Bloom</title>
+
+<style>
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    background: #131b21;
+  }
+
+  body {
+    min-height: 100vh;
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    font-family: system-ui, sans-serif;
+  }
+
+  .scene {
+    width: min(100vw, 1050px);
+    position: relative;
+  }
+
+  svg {
+    width: 100%;
+    max-height: 100svh;
+    display: block;
+    overflow: hidden;
+  }
+
+  .replay {
+    position: absolute;
+    left: 50%;
+    bottom: 2.5%;
+    transform: translateX(-50%);
+    padding: 8px 17px;
+    border: 1px solid #edc58a35;
+    border-radius: 30px;
+    background: #131b2170;
+    color: #e4c395;
+    font: inherit;
+    font-size: 11px;
+    letter-spacing: .12em;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+  }
+
+  .replay:hover {
+    background: #e4c39515;
+  }
+
+  .dust-motion {
+    animation:
+      floatDust var(--duration) var(--delay) linear infinite;
+  }
+
+  .dust-light {
+    animation:
+      twinkle var(--twinkle) ease-in-out infinite alternate;
+  }
+
+  @keyframes floatDust {
+    0% {
+      opacity: 0;
+      transform: translate(0, 35px);
+    }
+    18%, 78% { opacity: 1; }
+    100% {
+      opacity: 0;
+      transform: translate(var(--drift), -95px);
+    }
+  }
+
+  @keyframes twinkle {
+    from { opacity: .2; }
+    to { opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dust-motion,
+    .dust-light {
+      animation: none;
+      opacity: .6;
+    }
+  }
+</style>
+</head>
+
+<body>
+<main class="scene">
+<svg
+  viewBox="0 0 900 800"
+  xmlns="http://www.w3.org/2000/svg"
+  role="img"
+  aria-labelledby="title description"
+>
+  <title id="title">A glass lotus unfolding inside golden vines</title>
+  <desc id="description">
+    Golden branches grow into an arch. A rounded pink bud rises,
+    pauses, and opens into translucent pink and violet petals
+    around a warm luminous center.
+  </desc>
+
+  <defs>
+    <radialGradient id="atmosphere">
+      <stop stop-color="#633047" stop-opacity=".3"/>
+      <stop offset=".55" stop-color="#382338" stop-opacity=".13"/>
+      <stop offset="1" stop-color="#131b21" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="gold" x1="0" y1="1" x2=".7" y2="0">
+      <stop stop-color="#99652e"/>
+      <stop offset=".28" stop-color="#e9b66f"/>
+      <stop offset=".55" stop-color="#fff2ce"/>
+      <stop offset=".8" stop-color="#ebbb7a"/>
+      <stop offset="1" stop-color="#fff1d5"/>
+    </linearGradient>
+
+    <linearGradient id="stem" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#725436"/>
+      <stop offset=".5" stop-color="#d3af79"/>
+      <stop offset="1" stop-color="#6f4a32"/>
+    </linearGradient>
+
+    <linearGradient id="sepal" x1="0" y1="1" x2=".4" y2="0">
+      <stop stop-color="#b07b43" stop-opacity=".8"/>
+      <stop offset=".55" stop-color="#edba86" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#ffe7c4" stop-opacity=".9"/>
+    </linearGradient>
+
+    <linearGradient id="pinkGlass" x1=".25" y1="1" x2=".6" y2="0">
+      <stop stop-color="#ffc48f" stop-opacity=".76"/>
+      <stop offset=".2" stop-color="#db5d96" stop-opacity=".36"/>
+      <stop offset=".48" stop-color="#e778b3" stop-opacity=".31"/>
+      <stop offset=".76" stop-color="#ffc4e5" stop-opacity=".52"/>
+      <stop offset="1" stop-color="#fff4fb" stop-opacity=".88"/>
+    </linearGradient>
+
+    <linearGradient id="blueGlass" x1=".25" y1="1" x2=".8" y2="0">
+      <stop stop-color="#ffd1a0" stop-opacity=".68"/>
+      <stop offset=".25" stop-color="#cf70be" stop-opacity=".33"/>
+      <stop offset=".5" stop-color="#a17bd9" stop-opacity=".2"/>
+      <stop offset=".74" stop-color="#a8e9fa" stop-opacity=".38"/>
+      <stop offset="1" stop-color="#ffdff4" stop-opacity=".8"/>
+    </linearGradient>
+
+    <linearGradient id="pearlGlass" x1=".3" y1="1" x2=".55" y2="0">
+      <stop stop-color="#ffd196" stop-opacity=".85"/>
+      <stop offset=".3" stop-color="#f593bd" stop-opacity=".48"/>
+      <stop offset=".65" stop-color="#ffc8e3" stop-opacity=".66"/>
+      <stop offset="1" stop-color="#fff8fc" stop-opacity=".96"/>
+    </linearGradient>
+
+    <linearGradient id="edge" x1="0" y1="1" x2=".5" y2="0">
+      <stop stop-color="#ffdaaa" stop-opacity=".95"/>
+      <stop offset=".3" stop-color="#ff9dcf" stop-opacity=".35"/>
+      <stop offset=".7" stop-color="#ffd6ee" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#fff9ff"/>
+    </linearGradient>
+
+    <linearGradient id="reflection" x1="0" y1="1" x2=".8" y2="0">
+      <stop stop-color="#fff1d1" stop-opacity="0"/>
+      <stop offset=".25" stop-color="#ffcef1" stop-opacity=".12"/>
+      <stop offset=".55" stop-color="#c5eaff" stop-opacity=".7"/>
+      <stop offset=".8" stop-color="#fff2fc" stop-opacity=".86"/>
+      <stop offset="1" stop-color="#fffaff" stop-opacity=".1"/>
+    </linearGradient>
+
+    <radialGradient id="heartLight">
+      <stop stop-color="#fffef0"/>
+      <stop offset=".14" stop-color="#fff5cd" stop-opacity=".98"/>
+      <stop offset=".35" stop-color="#ffda98" stop-opacity=".65"/>
+      <stop offset=".65" stop-color="#ff9cbf" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#ff84b6" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="floorLight">
+      <stop stop-color="#dc73aa" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#dc73aa" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="goldGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="2.6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="softEdge" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+
+    <filter id="shineGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="1.6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="haloBlur" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="13"/>
+    </filter>
+  </defs>
+
+  <rect width="900" height="800" fill="#131b21"/>
+
+  <ellipse
+    cx="450" cy="410" rx="420" ry="360"
+    fill="url(#atmosphere)"
+  />
+
+  <g id="backDust"></g>
+
+  <g id="wreath">
+    <g id="branches" filter="url(#goldGlow)"></g>
+    <g id="shoots" filter="url(#goldGlow)"></g>
+    <g id="vineStars" filter="url(#goldGlow)"></g>
+  </g>
+
+  <ellipse
+    id="floorGlow"
+    cx="450" cy="698" rx="210" ry="32"
+    fill="url(#floorLight)"
+    opacity="0"
+  />
+
+  <g id="camera">
+    <g id="rise">
+      <g transform="translate(450 535)">
+        <path
+          d="M-5 4 C-3 40,-8 85,-6 120
+             L6 120 C4 80,7 40,5 4Z"
+          fill="url(#stem)"
+          opacity=".8"
+        />
+
+        <g id="sepals">
+          <path
+            d="M0 1 C-30 3,-48 -9,-66 -30
+               C-40 -26,-19 -22,0 -8Z"
+            fill="url(#sepal)"
+            stroke="#ffdeb4"
+            stroke-width=".7"
+          />
+          <path
+            d="M0 1 C30 3,48 -9,66 -30
+               C40 -26,19 -22,0 -8Z"
+            fill="url(#sepal)"
+            stroke="#ffdeb4"
+            stroke-width=".7"
+          />
+        </g>
+
+        <ellipse
+          id="flowerAura"
+          cx="0" cy="-100" rx="150" ry="160"
+          fill="url(#heartLight)"
+          opacity=".15"
+          filter="url(#haloBlur)"
+        />
+
+        <g id="backPetals"></g>
+
+        <g id="core">
+          <ellipse
+            cx="0" cy="-37" rx="83" ry="88"
+            fill="url(#heartLight)"
+            filter="url(#haloBlur)"
+          />
+          <ellipse
+            cx="0" cy="-39" rx="29" ry="43"
+            fill="url(#heartLight)"
+          />
+          <ellipse
+            cx="0" cy="-42" rx="7" ry="17"
+            fill="#fff9dd"
+            filter="url(#softEdge)"
+          />
+          <g id="stamens" filter="url(#shineGlow)"></g>
+        </g>
+
+        <g id="frontPetals"></g>
+      </g>
+    </g>
+  </g>
+
+  <g id="frontDust"></g>
+</svg>
+
+<button class="replay" type="button">REPLAY BLOOM</button>
+</main>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+
+function node(tag, attrs = {}) {
+  const el = document.createElementNS(NS, tag);
+  for (const [key, value] of Object.entries(attrs)) {
+    el.setAttribute(key, value);
+  }
+  return el;
+}
+
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = t => Math.max(0, Math.min(1, t));
+const smooth = t => {
+  t = clamp(t);
+  return t * t * (3 - 2 * t);
+};
+
+function phase(time, start, duration) {
+  return smooth((time - start) / duration);
+}
+
+const branchContainer = document.getElementById("branches");
+const shootContainer = document.getElementById("shoots");
+const starContainer = document.getElementById("vineStars");
+
+const branches = [];
+const shoots = [];
+const vineStars = [];
+
+function archPoint(progress, strand, side) {
+  const angle = lerp(Math.PI - .83, Math.PI * 1.5, progress);
+
+  const wave =
+    Math.sin(progress * Math.PI * 8 + strand * 1.55) * 17 +
+    Math.sin(progress * Math.PI * 4 + strand) * 6;
+
+  const leftX = 450 + (315 + wave) * Math.cos(angle);
+  const y = 414 + (316 + wave) * Math.sin(angle);
+
+  return {
+    x: side === -1 ? leftX : 900 - leftX,
+    y
+  };
+}
+
+for (const side of [-1, 1]) {
+  for (let strand = 0; strand < 4; strand++) {
+    let d = "";
+
+    for (let i = 0; i <= 180; i++) {
+      const p = archPoint(i / 180, strand, side);
+      d += `${i ? "L" : "M"}${p.x.toFixed(2)} ${p.y.toFixed(2)} `;
+    }
+
+    const path = node("path", {
+      d,
+      fill: "none",
+      stroke: "url(#gold)",
+      "stroke-width": strand === 0 ? 2.5 : 1.55,
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+      opacity: strand === 0 ? .95 : .72
+    });
+
+    branchContainer.appendChild(path);
+
+    const length = path.getTotalLength();
+    path.style.strokeDasharray = length;
+    path.style.strokeDashoffset = length;
+
+    branches.push({ path, length, delay: strand * .16 });
+  }
+
+  for (let i = 0; i < 14; i++) {
+    const progress = .07 + i * .068;
+    const p = archPoint(progress, i % 4, side);
+    const next = archPoint(progress + .002, i % 4, side);
+
+    const angle = Math.atan2(next.y - p.y, next.x - p.x);
+    const outward = side === -1 ? -1 : 1;
+    const size = 24 + (i % 4) * 5;
+
+    const group = node("g", {
+      transform:
+        `translate(${p.x} ${p.y}) rotate(${angle * 180 / Math.PI})`
+    });
+
+    const path = node("path", {
+      d:
+        `M0 0 ` +
+        `C8 ${outward * -10},20 ${outward * -size},34 ${outward * size} ` +
+        `C47 ${outward * -size},48 ${outward * (size - 15)},` +
+        `37 ${outward * (size - 12)}`,
+      fill: "none",
+      stroke: "#ffdcaa",
+      "stroke-width": 1.1,
+      "stroke-linecap": "round"
+    });
+
+    group.appendChild(path);
+    shootContainer.appendChild(group);
+
+    const length = path.getTotalLength();
+    path.style.strokeDasharray = length;
+    path.style.strokeDashoffset = length;
+
+    shoots.push({
+      path,
+      length,
+      start: .5 + progress * 3.5
+    });
+
+    if (i % 2 === 0) {
+      const star = node("circle", {
+        cx: p.x,
+        cy: p.y,
+        r: 2.1,
+        fill: "#fff1cf",
+        opacity: 0
+      });
+
+      starContainer.appendChild(star);
+      vineStars.push({ star, start: .6 + progress * 3.5 });
+    }
+  }
+}
+
+function openGeometry(x, y, width) {
+  const length = Math.hypot(x, y);
+  const nx = -y / length;
+  const ny = x / length;
+
+  const point = (distance, spread) => [
+    x * distance + nx * width * spread,
+    y * distance + ny * width * spread
+  ];
+
+  return [
+    [0, 0],
+    point(.2, -.85),
+    point(.68, -1),
+    [x, y],
+    point(.68, 1),
+    point(.2, .85),
+    [0, 0]
+  ];
+}
+
+function budGeometry(x, y, width) {
+  return [
+    [0, 0],
+    [x * .25 - width * .82, -32],
+    [x - width, y * .79],
+    [x, y],
+    [x + width, y * .79],
+    [x * .25 + width * .82, -32],
+    [0, 0]
+  ];
+}
+
+function shape(points) {
+  return `M${points[0]}
+    C${points[1]} ${points[2]} ${points[3]}
+    C${points[4]} ${points[5]} ${points[6]}Z`;
+}
+
+function insetCurve(points, amount) {
+  const a = [
+    lerp(points[1][0], points[5][0], amount),
+    lerp(points[1][1], points[5][1], amount)
+  ];
+
+  const b = [
+    lerp(points[2][0], points[4][0], amount),
+    lerp(points[2][1], points[4][1], amount)
+  ];
+
+  return `M${points[0]} C${a} ${b} ${points[3]}`;
+}
+
+function reflection(points) {
+  const a = [
+    lerp(points[0][0], points[1][0], .45),
+    lerp(points[0][1], points[1][1], .45)
+  ];
+
+  const b = [
+    lerp(points[1][0], points[5][0], .12),
+    lerp(points[1][1], points[5][1], .12)
+  ];
+
+  const c = [
+    lerp(points[2][0], points[4][0], .15),
+    lerp(points[2][1], points[4][1], .15)
+  ];
+
+  const end = [
+    lerp(points[3][0], points[2][0], .2),
+    lerp(points[3][1], points[2][1], .2)
+  ];
+
+  return `M${a} C${b} ${c} ${end}`;
+}
+
+const petals = [];
+const backPetals = document.getElementById("backPetals");
+const frontPetals = document.getElementById("frontPetals");
+
+const designs = [
+  [   0, -302, 66, "pinkGlass",  1.0, false],
+  [-145, -281, 57, "blueGlass",   .7, false],
+  [ 145, -281, 57, "blueGlass",   .7, false],
+  [ -83, -266, 59, "pinkGlass",  1.2, false],
+  [  83, -266, 59, "pinkGlass",  1.2, false],
+
+  [-294, -176, 59, "blueGlass",   0, false],
+  [ 294, -176, 59, "blueGlass",   0, false],
+  [-216, -247, 62, "pinkGlass", .35, false],
+  [ 216, -247, 62, "pinkGlass", .35, false],
+
+  [-121, -230, 69, "pinkGlass", 1.45, false],
+  [ 121, -230, 69, "pinkGlass", 1.45, false],
+  [   0, -235, 76, "pearlGlass", 1.7, false],
+
+  [-313,  -37, 54, "blueGlass",  .2, true],
+  [ 313,  -37, 54, "blueGlass",  .2, true],
+  [-235,   15, 59, "pinkGlass",  .6, true],
+  [ 235,   15, 59, "pinkGlass",  .6, true],
+  [-158,   37, 53, "blueGlass", 1.0, true],
+  [ 158,   37, 53, "blueGlass", 1.0, true],
+
+  [ -73, -131, 46, "pearlGlass", 2.0, false],
+  [  73, -131, 46, "pearlGlass", 2.0, false],
+  [   0,  -65, 67, "pinkGlass",  2.3, true]
+];
+
+designs.forEach(([x, y, width, material, delay, front], index) => {
+  const group = node("g");
+
+  const glow = node("path", {
+    fill: "none",
+    stroke: "#ffafd9",
+    "stroke-width": 4,
+    opacity: .23,
+    filter: "url(#softEdge)"
+  });
+
+  const body = node("path", {
+    fill: `url(#${material})`,
+    stroke: "url(#edge)",
+    "stroke-width": 1.25,
+    "stroke-linejoin": "round"
+  });
+
+  const shine = node("path", {
+    fill: "none",
+    stroke: "url(#reflection)",
+    "stroke-width": material === "blueGlass" ? 3.8 : 2,
+    "stroke-linecap": "round",
+    opacity: .75,
+    filter: "url(#shineGlow)"
+  });
+
+  const veins = [.3, .5, .7].map(amount => {
+    const path = node("path", {
+      fill: "none",
+      stroke: "#ffe1f0",
+      "stroke-width": .65,
+      opacity: amount === .5 ? .22 : .12
+    });
+
+    return { path, amount };
+  });
+
+  const tip = node("circle", {
+    r: front ? 1.6 : 2,
+    fill: "#fff5e9",
+    filter: "url(#goldGlow)"
+  });
+
+  group.append(glow, body, shine);
+  veins.forEach(vein => group.appendChild(vein.path));
+  group.appendChild(tip);
+
+  (front ? frontPetals : backPetals).appendChild(group);
+
+  const budX = x * .07;
+  const budY = -164 - (index % 4) * 7;
+  const budWidth = front ? 27 : 33 + (index % 3) * 4;
+
+  petals.push({
+    glow, body, shine, veins, tip,
+    group,
+    delay,
+    closed: budGeometry(budX, budY, budWidth),
+    opened: openGeometry(x, y, width)
+  });
+});
+
+const stamenContainer = document.getElementById("stamens");
+
+for (let i = -4; i <= 4; i++) {
+  const x = i * 5;
+  const y = -94 + Math.abs(i) * 6;
+
+  stamenContainer.appendChild(node("path", {
+    d: `M${x - .35} -20 Q${x + 1.3} -55 ${x} ${y}`,
+    fill: "none",
+    stroke: "#fff0b9",
+    "stroke-width": .9,
+    opacity: .7
+  }));
+
+  stamenContainer.appendChild(node("ellipse", {
+    cx: x,
+    cy: y,
+    rx: 1.5,
+    ry: 2.7,
+    fill: "#fff1bf",
+    opacity: .85
+  }));
+}
+
+function createDust(id, count, foreground) {
+  const container = document.getElementById(id);
+
+  for (let i = 0; i < count; i++) {
+    const x = 55 + Math.random() * 790;
+    const y = 85 + Math.random() * 640;
+    const radius = .6 + Math.random() * (foreground ? 1.8 : 1.1);
+
+    const motion = node("g", { class: "dust-motion" });
+    motion.style.setProperty("--duration", `${11 + Math.random() * 14}s`);
+    motion.style.setProperty("--delay", `${-Math.random() * 30}s`);
+    motion.style.setProperty("--drift", `${Math.random() * 55 - 27}px`);
+
+    const light = node("g", { class: "dust-light" });
+    light.style.setProperty("--twinkle", `${1.0 + Math.random() * 2.2}s`);
+
+    light.appendChild(node("circle", {
+      cx: x,
+      cy: y,
+      r: radius,
+      fill: foreground ? "#fff9e6" : "#ffcef2",
+      opacity: foreground ? .95 : .7,
+      filter: "url(#goldGlow)"
+    }));
+
+    if (foreground && i % 4 === 0) {
+      const arm = radius * 4.5;
+
+      light.appendChild(node("path", {
+        d: `M${x - arm} ${y} H${x + arm}
+            M${x} ${y - arm} V${y + arm}`,
+        stroke: "#fffcee",
+        "stroke-width": .8,
+        "stroke-linecap": "round",
+        filter: "url(#goldGlow)"
+      }));
+    }
+
+    motion.appendChild(light);
+    container.appendChild(motion);
+  }
+}
+
+createDust("backDust", 95, false);
+createDust("frontDust", 55, true);
+
+const wreath = document.getElementById("wreath");
+const camera = document.getElementById("camera");
+const rise = document.getElementById("rise");
+const core = document.getElementById("core");
+const sepals = document.getElementById("sepals");
+const aura = document.getElementById("flowerAura");
+const floorGlow = document.getElementById("floorGlow");
+
+let animationFrame;
+let startedAt;
+
+function render(time) {
+  branches.forEach(branch => {
+    const growth = phase(time, branch.delay, 2.8);
+    branch.path.style.strokeDashoffset =
+      branch.length * (1 - growth);
+  });
+
+  shoots.forEach(shoot => {
+    const growth = phase(time, shoot.start, 0.7);
+    shoot.path.style.strokeDashoffset =
+      shoot.length * (1 - growth);
+  });
+
+  vineStars.forEach(({ star, start }) => {
+    const appear = phase(time, start, .4);
+    const shimmer = .72 + Math.sin(time * 2.5 + start) * .2;
+    star.setAttribute("opacity", appear * shimmer);
+  });
+
+  const emergence = phase(time, 2.8, 1.2);
+  rise.setAttribute(
+    "transform",
+    `translate(0 ${lerp(240, 0, emergence)})`
+  );
+  rise.setAttribute("opacity", emergence);
+
+  const closeup = phase(time, 8.5, 3.5);
+  const zoom = lerp(1, 1.18, closeup);
+
+  camera.setAttribute(
+    "transform",
+    `translate(450 435) scale(${zoom})
+     translate(-450 -435)`
+  );
+
+  wreath.setAttribute(
+    "opacity",
+    lerp(1, .045, closeup)
+  );
+
+  const overallBloom = phase(time, 4.2, 4.2);
+  const coreStrength = phase(time, 3.8, 3.5);
+
+  core.setAttribute(
+    "opacity",
+    lerp(.24, .95, coreStrength)
+  );
+
+  stamenContainer.setAttribute(
+    "opacity",
+    phase(time, 5.2, 2.5)
+  );
+
+  aura.setAttribute(
+    "opacity",
+    lerp(.12, .32, coreStrength)
+  );
+
+  sepals.setAttribute(
+    "opacity",
+    lerp(.9, .28, overallBloom)
+  );
+
+  floorGlow.setAttribute(
+    "opacity",
+    emergence * .8
+  );
+
+  petals.forEach(petal => {
+    const opening = phase(time, 4.2 + (petal.delay * 0.6), 3.5);
+
+    const points = petal.closed.map((point, index) => [
+      lerp(point[0], petal.opened[index][0], opening),
+      lerp(point[1], petal.opened[index][1], opening)
+    ]);
+
+    const d = shape(points);
+    petal.body.setAttribute("d", d);
+    petal.glow.setAttribute("d", d);
+    petal.shine.setAttribute("d", reflection(points));
+
+    petal.veins.forEach(vein => {
+      vein.path.setAttribute(
+        "d",
+        insetCurve(points, vein.amount)
+      );
+    });
+
+    petal.tip.setAttribute("cx", points[3][0]);
+    petal.tip.setAttribute("cy", points[3][1]);
+    petal.tip.setAttribute(
+      "opacity",
+      lerp(.18, .85, opening)
+    );
+
+    petal.shine.setAttribute(
+      "opacity",
+      lerp(.18, .78, opening)
+    );
+  });
+}
+
+function replay() {
+  cancelAnimationFrame(animationFrame);
+
+  if (reducedMotion.matches) {
+    render(12);
+    return;
+  }
+
+  startedAt = performance.now();
+  render(0);
+
+  function frame(now) {
+    const time = (now - startedAt) / 1000;
+    render(time);
+
+    if (time < 12) {
+      animationFrame = requestAnimationFrame(frame);
+    }
+  }
+
+  animationFrame = requestAnimationFrame(frame);
+}
+
+document.querySelector(".replay").addEventListener("click", replay);
+
+replay();
+</script>
+</body>
+</html>
