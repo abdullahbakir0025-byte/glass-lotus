@@ -50,10 +50,43 @@
     letter-spacing: .12em;
     cursor: pointer;
     backdrop-filter: blur(8px);
+    z-index: 10;
   }
 
   .replay:hover {
     background: #e4c39515;
+  }
+
+  .dedication {
+    position: absolute;
+    top: 6%;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffd9a8;
+    font-family: system-ui, sans-serif;
+    font-size: clamp(18px, 2.8vw, 28px);
+    font-weight: 300;
+    letter-spacing: .18em;
+    text-align: center;
+    text-shadow: 0 0 15px rgba(255, 217, 168, 0.5), 0 0 30px rgba(255, 157, 207, 0.3);
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 10;
+  }
+
+  .dedication .word {
+    opacity: 0;
+    display: inline-block;
+    filter: blur(8px);
+    transform: translateY(10px);
+    transition: opacity 1.2s ease, filter 1.2s ease, transform 1.2s ease;
+    margin: 0 0.22em;
+  }
+
+  .dedication .word.visible {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
   }
 
   .dust-motion {
@@ -95,6 +128,7 @@
 
 <body>
 <main class="scene">
+<div class="dedication" id="dedication"></div>
 <svg
   viewBox="0 0 900 800"
   xmlns="http://www.w3.org/2000/svg"
@@ -302,6 +336,19 @@
 <script>
 const NS = "http://www.w3.org/2000/svg";
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+
+const textEl = document.getElementById("dedication");
+const message = "i love you hamw zhenm";
+const words = message.split(" ");
+const wordSpans = [];
+
+words.forEach((word) => {
+  const span = document.createElement("span");
+  span.className = "word";
+  span.textContent = word;
+  textEl.appendChild(span);
+  wordSpans.push(span);
+});
 
 function node(tag, attrs = {}) {
   const el = document.createElementNS(NS, tag);
@@ -682,6 +729,15 @@ let animationFrame;
 let startedAt;
 
 function render(time) {
+  wordSpans.forEach((wordSpan, idx) => {
+    const showTime = 0.8 + idx * 0.95;
+    if (time >= showTime) {
+      wordSpan.classList.add("visible");
+    } else {
+      wordSpan.classList.remove("visible");
+    }
+  });
+
   branches.forEach(branch => {
     const growth = phase(time, branch.delay, 2.8);
     branch.path.style.strokeDashoffset =
@@ -787,6 +843,7 @@ function replay() {
   cancelAnimationFrame(animationFrame);
 
   if (reducedMotion.matches) {
+    wordSpans.forEach(span => span.classList.add("visible"));
     render(12);
     return;
   }
