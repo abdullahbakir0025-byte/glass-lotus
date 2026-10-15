@@ -1,936 +1,871 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Luminous Lotus — Particle Lifecycle</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glass Lotus Bloom</title>
 
 <style>
   * { box-sizing: border-box; }
 
   html, body {
     margin: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #000;
-    color: #bdcaff;
-    font: 12px/1.5 system-ui, sans-serif;
+    min-height: 100%;
+    background: #131b21;
   }
 
-  canvas { display: block; }
+  body {
+    min-height: 100vh;
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    font-family: system-ui, sans-serif;
+  }
 
-  #title {
-    position: fixed;
-    top: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    pointer-events: none;
-    text-align: center;
+  .scene {
+    width: min(100vw, 1050px);
+    position: relative;
+  }
+
+  svg {
     width: 100%;
-    padding: 0 20px;
+    max-height: 100svh;
+    display: block;
+    overflow: hidden;
+  }
+
+  .replay {
+    position: absolute;
+    left: 50%;
+    bottom: 2.5%;
+    transform: translateX(-50%);
+    padding: 8px 17px;
+    border: 1px solid #edc58a35;
+    border-radius: 30px;
+    background: #131b2170;
+    color: #e4c395;
+    font: inherit;
+    font-size: 11px;
+    letter-spacing: .12em;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
     z-index: 10;
   }
 
-  #typed-title {
-    display: inline-block;
-    font-weight: 500;
-    font-size: clamp(16px, 2.5vw, 24px);
-    color: #ffffff;
-    letter-spacing: .25em;
-    text-transform: uppercase;
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.6), 0 0 40px rgba(105, 207, 255, 0.4);
+  .replay:hover {
+    background: #e4c39515;
   }
 
-  .word-span {
-    display: inline-block;
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-    filter: blur(8px);
-    transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 1.2s cubic-bezier(0.16, 1, 0.3, 1),
-                filter 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-    margin-right: 0.25em;
-  }
-
-  .word-span.visible {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0px);
-  }
-
-  #panel {
-    position: fixed;
-    bottom: 24px;
+  .dedication {
+    position: absolute;
+    top: 6%;
     left: 50%;
     transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    border: 1px solid #8d9eff26;
-    border-radius: 12px;
-    background: #03030bd9;
-    backdrop-filter: blur(12px);
-    max-width: calc(100vw - 24px);
-  }
-
-  button {
-    color: #cdeaff;
-    background: #7382ff12;
-    border: 1px solid #8d9eff38;
-    border-radius: 5px;
-    padding: 6px 10px;
-    cursor: pointer;
-  }
-
-  button:hover { background: #7382ff30; }
-
-  input {
-    width: min(34vw, 280px);
-    accent-color: #69cfff;
-  }
-
-  #phase {
-    width: 88px;
-    color: #88b6df;
-  }
-
-  #hint {
-    position: fixed;
-    right: 24px;
-    top: 24px;
-    color: #737995;
-    text-align: right;
+    color: #ffd9a8;
+    font-family: system-ui, sans-serif;
+    font-size: clamp(18px, 2.8vw, 28px);
+    font-weight: 300;
+    letter-spacing: .18em;
+    text-align: center;
+    text-shadow: 0 0 15px rgba(255, 217, 168, 0.5), 0 0 30px rgba(255, 157, 207, 0.3);
     pointer-events: none;
+    white-space: nowrap;
+    z-index: 10;
   }
 
-  @media (max-width: 600px) {
-    #hint { display: none; }
-    #panel { gap: 8px; padding: 10px; }
-    #phase { display: none; }
+  .dedication .word {
+    opacity: 0;
+    display: inline-block;
+    filter: blur(8px);
+    transform: translateY(10px);
+    transition: opacity 1.2s ease, filter 1.2s ease, transform 1.2s ease;
+    margin: 0 0.22em;
+  }
+
+  .dedication .word.visible {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+
+  .dust-motion {
+    animation:
+      floatDust var(--duration) var(--delay) linear infinite;
+  }
+
+  .dust-light {
+    animation:
+      twinkle var(--twinkle) ease-in-out infinite alternate;
+  }
+
+  @keyframes floatDust {
+    0% {
+      opacity: 0;
+      transform: translate(0, 35px);
+    }
+    18%, 78% { opacity: 1; }
+    100% {
+      opacity: 0;
+      transform: translate(var(--drift), -95px);
+    }
+  }
+
+  @keyframes twinkle {
+    from { opacity: .2; }
+    to { opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dust-motion,
+    .dust-light {
+      animation: none;
+      opacity: .6;
+    }
   }
 </style>
-
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
-  }
-}
-</script>
 </head>
 
 <body>
-<div id="title">
-  <div id="typed-title"></div>
-</div>
-
-<div id="hint">
-  Drag to orbit · Scroll to zoom<br>
-  Space to pause · R to replay
-</div>
-
-<div id="panel">
-  <button id="pause">Pause</button>
-  <button id="replay">Replay</button>
-  <input
-    id="progress"
-    type="range"
-    min="0"
-    max="1"
-    step="0.001"
-    value="0"
-    aria-label="Bloom progress"
-  >
-  <span id="phase">Hanging bud</span>
-</div>
-
-<script type="module">
-import * as THREE from 'three';
-import { OrbitControls } from
-  'three/addons/controls/OrbitControls.js';
-import { EffectComposer } from
-  'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from
-  'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from
-  'three/addons/postprocessing/UnrealBloomPass.js';
-import { OutputPass } from
-  'three/addons/postprocessing/OutputPass.js';
-
-// --------------------------------------------------------------------
-// Rendering — unchanged
-// --------------------------------------------------------------------
-
-const renderer = new THREE.WebGLRenderer({
-  antialias: false,
-  powerPreference: 'high-performance'
-});
-
-renderer.setClearColor(0x000000, 1);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
-renderer.setSize(innerWidth, innerHeight);
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.1;
-
-document.body.prepend(renderer.domElement);
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x000000);
-
-const camera = new THREE.PerspectiveCamera(
-  43,
-  innerWidth / innerHeight,
-  0.1,
-  100
-);
-
-camera.position.set(0, 6.1, 14.5);
-
-const controls = new OrbitControls(
-  camera,
-  renderer.domElement
-);
-
-controls.target.set(0, 2.8, 0);
-controls.enableDamping = true;
-controls.dampingFactor = 0.055;
-controls.enablePan = false;
-controls.minDistance = 9;
-controls.maxDistance = 23;
-controls.maxPolarAngle = Math.PI * 0.68;
-controls.update();
-
-const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
-
-const bloom = new UnrealBloomPass(
-  new THREE.Vector2(innerWidth, innerHeight),
-  0.95,
-  0.65,
-  0.32
-);
-
-composer.addPass(bloom);
-composer.addPass(new OutputPass());
-
-// --------------------------------------------------------------------
-// Deterministic particle generation
-// --------------------------------------------------------------------
-
-let randomState = 45831;
-
-function random() {
-  randomState = (
-    Math.imul(1664525, randomState) + 1013904223
-  ) >>> 0;
-
-  return randomState / 4294967296;
-}
-
-let flowerRandomState = 73921;
-
-function flowerRandom() {
-  flowerRandomState = (
-    Math.imul(1664525, flowerRandomState) + 1013904223
-  ) >>> 0;
-
-  return flowerRandomState / 4294967296;
-}
-
-const TAU = Math.PI * 2;
-
-const positions = [];
-const data = [];
-const kinds = [];
-const seeds = [];
-const sizes = [];
-
-function particle(
-  kind,
-  x, y, z,
-  t = 0,
-  v = 0,
-  angle = 0,
-  layer = 0,
-  size = 2
-) {
-  positions.push(x, y, z);
-  data.push(t, v, angle, layer);
-  kinds.push(kind);
-  seeds.push(random());
-  sizes.push(size);
-}
-
-// Soil
-for (let i = 0; i < 6500; i++) {
-  const a = random() * TAU;
-  const r = Math.pow(random(), 0.7) * 2.2;
-  const envelope = Math.exp(-r * r * 0.85);
-
-  const y =
-    -0.17 +
-    0.34 * envelope * Math.pow(random(), 0.38);
-
-  particle(
-    0,
-    Math.cos(a) * r,
-    y + (random() - 0.5) * 0.055,
-    Math.sin(a) * r * 0.64,
-    r / 2.2,
-    0, 0, 0,
-    1.2 + random() * 1.8
-  );
-}
-
-// Stem
-for (let i = 0; i < 4200; i++) {
-  particle(
-    1,
-    0, 0, 0,
-    random(),
-    random(),
-    random() * TAU,
-    0,
-    1.5 + random()
-  );
-}
-
-// Leaves
-for (let side = 0; side < 2; side++) {
-  for (let i = 0; i < 2200; i++) {
-    const t = random();
-    const v = random() < 0.18
-      ? (random() - 0.5) * 0.07
-      : random() * 2 - 1;
-
-    particle(
-      7,
-      0, 0, 0,
-      t,
-      v,
-      side === 0 ? 0.12 : Math.PI + 0.20,
-      side === 0 ? 0.34 : 0.56,
-      1.4 + random() * 0.9
-    );
-  }
-}
-
-// Petals
-const petalCounts = [12, 10, 8, 6];
-
-petalCounts.forEach((count, layer) => {
-  for (let petal = 0; petal < count; petal++) {
-    const angle = petal / count * TAU + layer * 0.37;
-
-    for (let i = 0; i < 650; i++) {
-      const t = 0.015 + random() * 0.98;
-      let v = random() * 2 - 1;
-
-      if (random() < 0.12) {
-        v = (random() - 0.5) * 0.05;
-      }
-
-      const detail = flowerRandom();
-
-      if (detail < 0.075) {
-        const side = v < 0 ? -1 : 1;
-        v = side * (0.94 + flowerRandom() * 0.06);
-      } else if (detail < 0.16) {
-        const vein = Math.floor(flowerRandom() * 5) - 2;
-        v = vein * 0.31 + (flowerRandom() - 0.5) * 0.035;
-      }
-
-      particle(
-        2,
-        0, 0, 0,
-        t,
-        v,
-        angle,
-        layer,
-        1.6 + random() * 1.1
-      );
-    }
-  }
-});
-
-// Sepals
-for (let sepal = 0; sepal < 8; sepal++) {
-  for (let i = 0; i < 450; i++) {
-    particle(
-      3,
-      0, 0, 0,
-      random(),
-      random() * 2 - 1,
-      sepal / 8 * TAU + 0.19,
-      0,
-      1.4 + random()
-    );
-  }
-}
-
-// Flower center
-const filamentCount = 110;
-
-for (let i = 0; i < 2400; i++) {
-  const originalAngle = random() * TAU;
-  const originalRadius = Math.sqrt(random()) * 0.40;
-  const originalT = random();
-  const originalSize = 1.4 + random() * 1.5;
-
-  let x, y, z, t, filament;
-
-  if (i < 1650) {
-    const index = i % filamentCount;
-    const angle = index * 2.399963229728653;
-    const ring = Math.sqrt((index + 0.5) / filamentCount);
-    const radius = 0.15 + 0.22 * ring;
-
-    t = flowerRandom() < 0.30
-      ? 0.92 + flowerRandom() * 0.08
-      : flowerRandom();
-
-    const height = 0.30 + 0.14 * (1 - ring) + 0.035 * Math.sin(index * 1.73);
-    const lean = 0.055 * t * t;
-    const jitter = t > 0.90 ? 0.014 : 0.005;
-
-    x = Math.cos(angle) * (radius + lean) + (flowerRandom() - 0.5) * jitter;
-    z = Math.sin(angle) * (radius + lean) + (flowerRandom() - 0.5) * jitter;
-    y = 0.14 + height * t + (flowerRandom() - 0.5) * jitter;
-
-    filament = 1;
-  } else {
-    const angle = flowerRandom() * TAU;
-    const radius = Math.sqrt(flowerRandom()) * 0.25;
-
-    x = Math.cos(angle) * radius;
-    z = Math.sin(angle) * radius;
-    y = 0.15 + 0.16 * (1 - Math.pow(radius / 0.25, 2)) + (flowerRandom() - 0.5) * 0.018;
-
-    t = originalT;
-    filament = 0;
-  }
-
-  particle(
-    4,
-    x, y, z,
-    t,
-    filament,
-    0, 0,
-    originalSize
-  );
-}
-
-// Geometric backdrop (Moved higher up by increasing backdropY)
-const backdropZ = -2.5;
-const backdropY = 4.0;
-
-function constructionPoint(x, y, brightness = 1, motionRadius = 0, motionSpeed = 0, motionAngle = 0) {
-  particle(
-    5,
-    x,
-    backdropY + y,
-    backdropZ,
-    brightness * 1.25,
-    motionRadius,
-    motionAngle,
-    motionSpeed,
-    1.45
-  );
-}
-
-function circle(cx, cy, r, brightness = 1, start = 0, end = TAU) {
-  const count = Math.ceil((end - start) * r / 0.022);
-  for (let i = 0; i <= count; i++) {
-    const a = start + (end - start) * i / count;
-    const angleOffset = Math.random() * TAU;
-    const speed = 0.2 + Math.random() * 0.4;
-    constructionPoint(cx + Math.cos(a) * r, cy + Math.sin(a) * r, brightness, 0.04, speed, angleOffset);
-  }
-}
-
-function line(x1, y1, x2, y2, brightness = 1) {
-  const count = Math.max(1, Math.ceil(Math.hypot(x2 - x1, y2 - y1) / 0.024));
-  for (let i = 0; i <= count; i++) {
-    const t = i / count;
-    const angleOffset = Math.random() * TAU;
-    const speed = 0.15 + Math.random() * 0.35;
-    constructionPoint(x1 + (x2 - x1) * t, y1 + (y2 - y1) * t, brightness, 0.03, speed, angleOffset);
-  }
-}
-
-[0.7, 1.4, 2.15, 2.85, 3.05].forEach((r, i) => circle(0, 0, r, i === 4 ? 0.6 : 0.9));
-
-for (let i = 0; i < 6; i++) {
-  const a = i * TAU / 6;
-  circle(Math.cos(a) * 1.4, Math.sin(a) * 1.4, 1.4, 0.62);
-  const b = a + TAU / 3;
-  line(Math.cos(a) * 2.85, Math.sin(a) * 2.85, Math.cos(b) * 2.85, Math.sin(b) * 2.85, 0.78);
-}
-
-line(-3.2, 0, 3.2, 0, 0.45);
-line(0, -3.2, 0, 3.2, 0.45);
-
-for (let i = 0; i < 130; i++) {
-  const a = i / 130 * TAU;
-  const r0 = i % 10 === 0 ? 2.88 : 2.98;
-  line(Math.cos(a) * r0, Math.sin(a) * r0, Math.cos(a) * 3.05, Math.sin(a) * 3.05, 0.78);
-}
-
-// Dust
-for (let i = 0; i < 1200; i++) {
-  particle(
-    6,
-    (random() - 0.5) * 8,
-    random() * 7,
-    (random() - 0.5) * 5,
-    random(),
-    0, 0, 0,
-    1 + random() * 1.4
-  );
-}
-
-// Shaders
-const gl = renderer.getContext();
-
-const uniforms = {
-  uTime: { value: 0 },
-  uProgress: { value: 0 },
-  uDPR: { value: renderer.getPixelRatio() },
-  uMaxPointSize: { value: gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE)[1] }
-};
-
-const vertexShader = /* glsl */`
-precision highp float;
-
-attribute vec4 aData;
-attribute float aKind;
-attribute float aSeed;
-attribute float aSize;
-
-uniform float uTime;
-uniform float uProgress;
-uniform float uDPR;
-uniform float uMaxPointSize;
-
-varying vec3 vColor;
-varying float vOpacity;
-
-const float PI = 3.14159265359;
-
-float ease(float a, float b, float x) {
-  float q = clamp((x - a) / (b - a), 0.0, 1.0);
-  return q*q*q * (q * (q*6.0 - 15.0) + 10.0);
-}
-
-float liftAmount() {
-  return ease(0.025, 0.61, uProgress);
-}
-
-vec3 stem(float s) {
-  float d = 1.0 - liftAmount();
-  float sway = 0.045 * sin(uTime * 0.66) * liftAmount();
-  return vec3(
-    -1.8*d*s*s + 0.10*pow(sin(PI*s), 2.0) + sway*s*s,
-    0.15 + 4.8*s - 2.6*d*s*s*s,
-    0.07*sin(PI*s) + 0.035*sin(uTime*0.51)*s*s
-  );
-}
-
-vec3 tangent(float s) {
-  float d = 1.0 - liftAmount();
-  float sway = 0.045 * sin(uTime * 0.66) * liftAmount();
-  return normalize(vec3(
-    -3.6*d*s + 0.10*PI*sin(2.0*PI*s) + 2.0*sway*s,
-    4.8 - 7.8*d*s*s,
-    0.07*PI*cos(PI*s) + 0.07*sin(uTime*0.51)*s
-  ));
-}
-
-vec3 attached(vec3 p, float s) {
-  vec3 y = tangent(s);
-  vec3 x = normalize(cross(y, vec3(0.0, 0.0, 1.0)));
-  vec3 z = normalize(cross(x, y));
-  return stem(s) + x*p.x + y*p.y + z*p.z;
-}
-
-vec2 petalCurve(vec2 p0, vec2 p1, vec2 p2, vec2 p3, float t) {
-  float q = 1.0 - t;
-  return q*q*q*p0 + 3.0*q*q*t*p1 + 3.0*q*t*t*p2 + t*t*t*p3;
-}
-
-void main() {
-  float t = aData.x;
-  float v = aData.y;
-  float angle = aData.z;
-  float layer = aData.w;
-
-  float seed = aSeed * 6.2831853;
-  float opened = ease(0.15, 1.0, uProgress);
-
-  vec3 violet = vec3(0.23, 0.025, 0.85);
-  vec3 blue = vec3(0.025, 0.24, 1.8);
-  vec3 cyan = vec3(0.10, 1.20, 2.1);
-  vec3 white = vec3(1.30, 2.00, 2.40);
-
-  vec3 p = position;
-  vColor = violet;
-  vOpacity = 0.75;
-
-  if (aKind < 0.5) {
-    vColor = mix(violet, blue, 0.20 + 0.20*aSeed) * 0.65;
-    vOpacity = 0.35 + 0.35*aSeed;
-  }
-  else if (aKind < 1.5) {
-    float radius = (0.052 - 0.022*t) * sqrt(v);
-    p = attached(vec3(cos(angle)*radius, 0.0, sin(angle)*radius), t);
-    vColor = mix(violet, blue, t*0.48);
-    vOpacity = 0.80;
-  }
-  else if (aKind < 3.5) {
-    bool sepal = aKind > 2.5;
-    float l = layer / 3.0;
-
-    float stagger = 0.045 * (0.5 + 0.5*sin(angle*2.0 + layer));
-    float start = sepal ? 0.075 : 0.18 + layer*0.145 + stagger;
-    float end = sepal ? 0.40 : start + 0.32;
-    float unfold = ease(start, end, uProgress);
-    float shape = pow(max(sin(PI*t), 0.0), 0.80);
-
-    float closedRadius = 0.025 + 0.25*sin(PI*t);
-    float closedHeight = 1.38*t + layer*0.018;
-    float closedWidth = 0.105*shape;
-
-    float individuality = sin(angle*3.0 + layer*1.73);
-    float individuality2 = sin(angle*5.0 - layer*0.91 + 1.4);
-
-    float length = mix(2.15, 0.96, l) * (1.0 + 0.045*individuality);
-    float tipHeight = 0.40 + 1.12*l + 0.055*individuality2;
-
-    vec2 centerline = petalCurve(
-      vec2(0.065 + 0.018*layer, 0.035 + 0.024*layer),
-      vec2(length*0.23, 0.36 + 0.29*l),
-      vec2(length*(0.85 - 0.10*l), 0.13 + 0.76*l),
-      vec2(length*(1.0 - 0.08*l), tipHeight),
-      t
-    );
-
-    float openRadius = centerline.x;
-    float openHeight = centerline.y + (0.23 + 0.06*l)*sin(PI*t);
-    float petalProfile = pow(max(sin(PI*pow(t, 0.80)), 0.0), 0.88);
-    float openWidth = mix(0.80, 0.44, l) * petalProfile * (1.0 + 0.045*individuality2);
-
-    if (sepal) {
-      openRadius = 0.08 + 2.05*t;
-      openHeight = -0.92*t + 0.28*sin(PI*t);
-      openWidth = 0.25*shape;
-      closedRadius += 0.07;
-    }
-
-    float radial = mix(closedRadius, openRadius, unfold);
-    float height = mix(closedHeight, openHeight, unfold);
-    float width = mix(closedWidth, openWidth, unfold);
-    float sideOffset = v*width;
-
-    if (sepal) {
-      height += unfold*0.20*v*v*shape;
-    } else {
-      float cup = (0.19 + 0.12*l) * v*v * petalProfile;
-      float edgeCurl = (0.065 + 0.035*l) * pow(abs(v), 6.0) * sin(PI*t);
-      float midrib = 0.032 * exp(-v*v*34.0) * sin(PI*t);
-      float veinRelief = 0.007 * cos(v*20.3 + 0.45*sin(PI*t)) * sin(PI*t);
-      float twist = 0.055 * individuality * v * sin(PI*t);
-
-      height += unfold * (cup + edgeCurl + midrib + veinRelief + twist);
-      radial -= unfold * 0.07 * v*v * sin(PI*t);
-      sideOffset += unfold * 0.065 * individuality2 * sin(PI*t) * t;
-    }
-
-    float breath = sin(uTime*1.05 + layer*0.3);
-    radial *= 1.0 + 0.012*opened*breath;
-    height += 0.018 * unfold * t*t * sin(uTime*1.4 + angle*2.0);
-
-    vec3 radialAxis = vec3(cos(angle), 0.0, sin(angle));
-    vec3 sideAxis = vec3(-sin(angle), 0.0, cos(angle));
-    vec3 local = radialAxis*radial + sideAxis*sideOffset;
-    local.y = height;
-
-    float thickness = sepal ? 0.009 : 0.006;
-    local += vec3(sin(seed*3.1), sin(seed*2.7), cos(seed*4.3)) * thickness;
-    p = attached(local, 1.0);
-
-    float inner = sepal ? 0.02 : l;
-    vColor = mix(violet, blue, 0.16 + inner*0.78);
-    vColor = mix(vColor, cyan, inner*0.60 + (1.0-t)*0.20);
-    vColor = mix(vColor, white, inner*0.18*(1.0-t));
-
-    if (sepal) {
-      vColor *= 0.75;
-    } else {
-      float surfaceTone = 0.82 + 0.14*sin(PI*t) + 0.035*individuality;
-      vColor *= surfaceTone;
-
-      float margin = smoothstep(0.78, 1.0, abs(v));
-      float centralVein = exp(-abs(v)*30.0);
-      float fineVeins = pow(max(cos(v*20.3 + 0.45*sin(PI*t)), 0.0), 16.0);
-
-      vColor += mix(blue, cyan, 0.35 + 0.35*l) * unfold * sin(PI*t) * (
-        0.045*centralVein + 0.018*fineVeins + 0.025*margin
-      );
-
-      vColor = mix(vColor, mix(violet, blue, 0.32 + 0.35*l), 0.12*smoothstep(0.70, 1.0, t));
-    }
-
-    vOpacity = mix(0.58, 0.87, unfold);
-  }
-  else if (aKind < 4.5) {
-    float reveal = ease(0.57, 0.97, uProgress);
-    vec3 local = position;
-
-    local.xz *= 0.25 + 0.75*reveal;
-    local.y *= 0.45 + 0.55*reveal;
-    local.y += 0.018*sin(uTime*1.2 + seed);
-    p = attached(local, 1.0);
-
-    if (v > 0.5) {
-      float anther = smoothstep(0.87, 0.98, t);
-      vColor = mix(mix(blue, cyan, 0.70), mix(cyan, white, 0.55), anther);
-      vColor *= 0.88 + 0.16*aSeed;
-    } else {
-      vColor = mix(blue, cyan, 0.52 + 0.22*aSeed);
-    }
-
-    vOpacity = 0.025 + 0.88*reveal;
-  }
-  else if (aKind < 5.5) {
-    float motionRadius = v;
-    float motionSpeed = layer;
-    float initialAngle = angle;
-
-    float currentAngle = initialAngle + uTime * motionSpeed;
-    p.x += cos(currentAngle) * motionRadius;
-    p.y += sin(currentAngle) * motionRadius * 0.7;
-
-    float pulse = 1.05 + 0.15 * sin(uTime * 0.7 + seed * 5.0);
-    float reveal = ease(0.05, 0.40, uProgress);
-
-    vColor = mix(violet, cyan, 0.4 + 0.3 * aSeed) * 1.15;
-    vOpacity = 0.55 * aData.x * pulse * reveal;
-  }
-  else if (aKind < 6.5) {
-    p.x += 0.13*sin(uTime*0.19 + seed*2.0);
-    p.z += 0.12*cos(uTime*0.17 + seed);
-    p.y += 0.12*sin(uTime*0.27 + seed*3.0);
-    vColor = mix(violet, cyan, aSeed);
-    vOpacity = 0.10 + 0.13*pow(sin(seed + uTime*0.3), 2.0);
-  }
-  else {
-    float spread = 0.55 + 0.45*liftAmount();
-    float shape = pow(max(sin(PI*t), 0.0), 0.85);
-    float radial = 1.55*t*spread;
-    float height = 0.48*sin(PI*t) + 0.30*t - 0.25*(1.0-liftAmount())*t;
-    height += 0.06 * sin(uTime*0.9 + angle) * t*t;
-
-    vec3 r = vec3(cos(angle), 0.0, sin(angle));
-    vec3 side = vec3(-sin(angle), 0.0, cos(angle));
-    vec3 local = r*radial + side*(0.39*v*shape);
-    local.y = height + 0.12*v*v*shape;
-
-    p = attached(local, layer);
-    vColor = mix(violet, blue, 0.20 + 0.45*t);
-    vColor += cyan * 0.16 * exp(-abs(v)*18.0);
-    vOpacity = 0.72;
-  }
-
-  if (aKind > 1.5 && aKind < 4.5) {
-    float micro = 0.004 + 0.005*opened;
-    p += micro * vec3(
-      sin(uTime*0.8 + seed*5.0),
-      cos(uTime*0.7 + seed*3.0),
-      sin(uTime*0.9 + seed*7.0)
-    );
-  }
-
-  vec4 mv = modelViewMatrix * vec4(p, 1.0);
-  gl_Position = projectionMatrix * mv;
-
-  float pixelSize = aSize * uDPR * (9.0 / max(1.0, -mv.z));
-  gl_PointSize = clamp(pixelSize, 1.0, min(14.0, uMaxPointSize));
-}
-`;
-
-const fragmentShader = /* glsl */`
-precision highp float;
-
-varying vec3 vColor;
-varying float vOpacity;
-
-void main() {
-  vec2 q = gl_PointCoord*2.0 - 1.0;
-  float r2 = dot(q, q);
-  if (r2 > 1.0) discard;
-
-  float halo = exp(-4.5*r2);
-  float core = exp(-18.0*r2);
-  float alpha = (halo*0.72 + core*0.28) * (1.0 - smoothstep(0.65, 1.0, r2));
-
-  gl_FragColor = vec4(vColor, alpha*vOpacity);
-}
-`;
-
-const geometry = new THREE.BufferGeometry();
-geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-geometry.setAttribute('aData', new THREE.Float32BufferAttribute(data, 4));
-geometry.setAttribute('aKind', new THREE.Float32BufferAttribute(kinds, 1));
-geometry.setAttribute('aSeed', new THREE.Float32BufferAttribute(seeds, 1));
-geometry.setAttribute('aSize', new THREE.Float32BufferAttribute(sizes, 1));
-
-const material = new THREE.ShaderMaterial({
-  uniforms,
-  vertexShader,
-  fragmentShader,
-  transparent: true,
-  depthWrite: false,
-  depthTest: true,
-  blending: THREE.AdditiveBlending
-});
-
-const particles = new THREE.Points(geometry, material);
-particles.frustumCulled = false;
-scene.add(particles);
-
-// Lifecycle and UI
-const slider = document.querySelector('#progress');
-const pauseButton = document.querySelector('#pause');
-const phaseLabel = document.querySelector('#phase');
-
-const BLOOM_SECONDS = 25;
-const INITIAL_HOLD_SECONDS = 2;
-
-let progress = 0;
-let elapsed = 0;
-let time = 0;
-let playing = true;
-let previous = performance.now();
-
-function updatePauseButton() {
-  pauseButton.textContent = playing ? 'Pause' : 'Resume';
-}
-
-function replay() {
-  progress = 0;
-  elapsed = 0;
-  playing = true;
-  slider.value = '0';
-  updatePauseButton();
-}
-
-pauseButton.addEventListener('click', () => {
-  playing = !playing;
-  updatePauseButton();
-});
-
-document.querySelector('#replay').addEventListener('click', replay);
-
-slider.addEventListener('input', () => {
-  progress = Number(slider.value);
-  elapsed = INITIAL_HOLD_SECONDS + progress * BLOOM_SECONDS;
-  playing = false;
-  updatePauseButton();
-});
-
-addEventListener('keydown', event => {
-  if (event.target instanceof HTMLInputElement) return;
-  if (event.code === 'Space') {
-    event.preventDefault();
-    playing = !playing;
-    updatePauseButton();
-  }
-  if (event.key.toLowerCase() === 'r') {
-    replay();
-  }
-});
-
-function resize() {
-  const dpr = Math.min(devicePixelRatio, 1.75);
-  renderer.setPixelRatio(dpr);
-  renderer.setSize(innerWidth, innerHeight);
-  composer.setPixelRatio(dpr);
-  composer.setSize(innerWidth, innerHeight);
-  camera.aspect = innerWidth / innerHeight;
-  camera.fov = camera.aspect < 0.8 ? 57 : 43;
-  camera.updateProjectionMatrix();
-  uniforms.uDPR.value = dpr;
-}
-
-addEventListener('resize', resize);
-resize();
-
-// Word-by-word setup mapped to bloom progress
-const targetText = "Zor Zorm Xosh Dawey Shazada Xatunm";
-const words = targetText.split(" ");
-const typedTitleEl = document.getElementById("typed-title");
+<main class="scene">
+<div class="dedication" id="dedication"></div>
+<svg
+  viewBox="0 0 900 800"
+  xmlns="http://www.w3.org/2000/svg"
+  role="img"
+  aria-labelledby="title description"
+>
+  <title id="title">A glass lotus unfolding inside golden vines</title>
+  <desc id="description">
+    Golden branches grow into an arch. A rounded pink bud rises,
+    pauses, and opens into translucent pink and violet petals
+    around a warm luminous center.
+  </desc>
+
+  <defs>
+    <radialGradient id="atmosphere">
+      <stop stop-color="#633047" stop-opacity=".3"/>
+      <stop offset=".55" stop-color="#382338" stop-opacity=".13"/>
+      <stop offset="1" stop-color="#131b21" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="gold" x1="0" y1="1" x2=".7" y2="0">
+      <stop stop-color="#99652e"/>
+      <stop offset=".28" stop-color="#e9b66f"/>
+      <stop offset=".55" stop-color="#fff2ce"/>
+      <stop offset=".8" stop-color="#ebbb7a"/>
+      <stop offset="1" stop-color="#fff1d5"/>
+    </linearGradient>
+
+    <linearGradient id="stem" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#725436"/>
+      <stop offset=".5" stop-color="#d3af79"/>
+      <stop offset="1" stop-color="#6f4a32"/>
+    </linearGradient>
+
+    <linearGradient id="sepal" x1="0" y1="1" x2=".4" y2="0">
+      <stop stop-color="#b07b43" stop-opacity=".8"/>
+      <stop offset=".55" stop-color="#edba86" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#ffe7c4" stop-opacity=".9"/>
+    </linearGradient>
+
+    <linearGradient id="pinkGlass" x1=".25" y1="1" x2=".6" y2="0">
+      <stop stop-color="#ffc48f" stop-opacity=".76"/>
+      <stop offset=".2" stop-color="#db5d96" stop-opacity=".36"/>
+      <stop offset=".48" stop-color="#e778b3" stop-opacity=".31"/>
+      <stop offset=".76" stop-color="#ffc4e5" stop-opacity=".52"/>
+      <stop offset="1" stop-color="#fff4fb" stop-opacity=".88"/>
+    </linearGradient>
+
+    <linearGradient id="blueGlass" x1=".25" y1="1" x2=".8" y2="0">
+      <stop stop-color="#ffd1a0" stop-opacity=".68"/>
+      <stop offset=".25" stop-color="#cf70be" stop-opacity=".33"/>
+      <stop offset=".5" stop-color="#a17bd9" stop-opacity=".2"/>
+      <stop offset=".74" stop-color="#a8e9fa" stop-opacity=".38"/>
+      <stop offset="1" stop-color="#ffdff4" stop-opacity=".8"/>
+    </linearGradient>
+
+    <linearGradient id="pearlGlass" x1=".3" y1="1" x2=".55" y2="0">
+      <stop stop-color="#ffd196" stop-opacity=".85"/>
+      <stop offset=".3" stop-color="#f593bd" stop-opacity=".48"/>
+      <stop offset=".65" stop-color="#ffc8e3" stop-opacity=".66"/>
+      <stop offset="1" stop-color="#fff8fc" stop-opacity=".96"/>
+    </linearGradient>
+
+    <linearGradient id="edge" x1="0" y1="1" x2=".5" y2="0">
+      <stop stop-color="#ffdaaa" stop-opacity=".95"/>
+      <stop offset=".3" stop-color="#ff9dcf" stop-opacity=".35"/>
+      <stop offset=".7" stop-color="#ffd6ee" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#fff9ff"/>
+    </linearGradient>
+
+    <linearGradient id="reflection" x1="0" y1="1" x2=".8" y2="0">
+      <stop stop-color="#fff1d1" stop-opacity="0"/>
+      <stop offset=".25" stop-color="#ffcef1" stop-opacity=".12"/>
+      <stop offset=".55" stop-color="#c5eaff" stop-opacity=".7"/>
+      <stop offset=".8" stop-color="#fff2fc" stop-opacity=".86"/>
+      <stop offset="1" stop-color="#fffaff" stop-opacity=".1"/>
+    </linearGradient>
+
+    <radialGradient id="heartLight">
+      <stop stop-color="#fffef0"/>
+      <stop offset=".14" stop-color="#fff5cd" stop-opacity=".98"/>
+      <stop offset=".35" stop-color="#ffda98" stop-opacity=".65"/>
+      <stop offset=".65" stop-color="#ff9cbf" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#ff84b6" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="floorLight">
+      <stop stop-color="#dc73aa" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#dc73aa" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="goldGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="2.6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="softEdge" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+
+    <filter id="shineGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="1.6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="haloBlur" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="13"/>
+    </filter>
+  </defs>
+
+  <rect width="900" height="800" fill="#131b21"/>
+
+  <ellipse
+    cx="450" cy="410" rx="420" ry="360"
+    fill="url(#atmosphere)"
+  />
+
+  <g id="backDust"></g>
+
+  <g id="wreath">
+    <g id="branches" filter="url(#goldGlow)"></g>
+    <g id="shoots" filter="url(#goldGlow)"></g>
+    <g id="vineStars" filter="url(#goldGlow)"></g>
+  </g>
+
+  <ellipse
+    id="floorGlow"
+    cx="450" cy="698" rx="210" ry="32"
+    fill="url(#floorLight)"
+    opacity="0"
+  />
+
+  <g id="camera">
+    <g id="rise">
+      <g transform="translate(450 535)">
+        <path
+          d="M-5 4 C-3 40,-8 85,-6 120
+             L6 120 C4 80,7 40,5 4Z"
+          fill="url(#stem)"
+          opacity=".8"
+        />
+
+        <g id="sepals">
+          <path
+            d="M0 1 C-30 3,-48 -9,-66 -30
+               C-40 -26,-19 -22,0 -8Z"
+            fill="url(#sepal)"
+            stroke="#ffdeb4"
+            stroke-width=".7"
+          />
+          <path
+            d="M0 1 C30 3,48 -9,66 -30
+               C40 -26,19 -22,0 -8Z"
+            fill="url(#sepal)"
+            stroke="#ffdeb4"
+            stroke-width=".7"
+          />
+        </g>
+
+        <ellipse
+          id="flowerAura"
+          cx="0" cy="-100" rx="150" ry="160"
+          fill="url(#heartLight)"
+          opacity=".15"
+          filter="url(#haloBlur)"
+        />
+
+        <g id="backPetals"></g>
+
+        <g id="core">
+          <ellipse
+            cx="0" cy="-37" rx="83" ry="88"
+            fill="url(#heartLight)"
+            filter="url(#haloBlur)"
+          />
+          <ellipse
+            cx="0" cy="-39" rx="29" ry="43"
+            fill="url(#heartLight)"
+          />
+          <ellipse
+            cx="0" cy="-42" rx="7" ry="17"
+            fill="#fff9dd"
+            filter="url(#softEdge)"
+          />
+          <g id="stamens" filter="url(#shineGlow)"></g>
+        </g>
+
+        <g id="frontPetals"></g>
+      </g>
+    </g>
+  </g>
+
+  <g id="frontDust"></g>
+</svg>
+
+<button class="replay" type="button">REPLAY BLOOM</button>
+</main>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+
+const textEl = document.getElementById("dedication");
+const message = "i love you hamw zhenm";
+const words = message.split(" ");
 const wordSpans = [];
 
-words.forEach(word => {
+words.forEach((word) => {
   const span = document.createElement("span");
-  span.className = "word-span";
+  span.className = "word";
   span.textContent = word;
-  typedTitleEl.appendChild(span);
+  textEl.appendChild(span);
   wordSpans.push(span);
 });
 
-function updateWords(prog) {
-  const totalWords = wordSpans.length;
-  const activeProgress = Math.min(Math.max((prog - 0.05) / 0.9, 0), 1);
-  const targetIndex = activeProgress * totalWords;
+function node(tag, attrs = {}) {
+  const el = document.createElementNS(NS, tag);
+  for (const [key, value] of Object.entries(attrs)) {
+    el.setAttribute(key, value);
+  }
+  return el;
+}
 
-  wordSpans.forEach((span, index) => {
-    if (index <= targetIndex) {
-      span.classList.add("visible");
-    } else {
-      span.classList.remove("visible");
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = t => Math.max(0, Math.min(1, t));
+const smooth = t => {
+  t = clamp(t);
+  return t * t * (3 - 2 * t);
+};
+
+function phase(time, start, duration) {
+  return smooth((time - start) / duration);
+}
+
+const branchContainer = document.getElementById("branches");
+const shootContainer = document.getElementById("shoots");
+const starContainer = document.getElementById("vineStars");
+
+const branches = [];
+const shoots = [];
+const vineStars = [];
+
+function archPoint(progress, strand, side) {
+  const angle = lerp(Math.PI - .83, Math.PI * 1.5, progress);
+
+  const wave =
+    Math.sin(progress * Math.PI * 8 + strand * 1.55) * 17 +
+    Math.sin(progress * Math.PI * 4 + strand) * 6;
+
+  const leftX = 450 + (315 + wave) * Math.cos(angle);
+  const y = 414 + (316 + wave) * Math.sin(angle);
+
+  return {
+    x: side === -1 ? leftX : 900 - leftX,
+    y
+  };
+}
+
+for (const side of [-1, 1]) {
+  for (let strand = 0; strand < 4; strand++) {
+    let d = "";
+
+    for (let i = 0; i <= 180; i++) {
+      const p = archPoint(i / 180, strand, side);
+      d += `${i ? "L" : "M"}${p.x.toFixed(2)} ${p.y.toFixed(2)} `;
     }
+
+    const path = node("path", {
+      d,
+      fill: "none",
+      stroke: "url(#gold)",
+      "stroke-width": strand === 0 ? 2.5 : 1.55,
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+      opacity: strand === 0 ? .95 : .72
+    });
+
+    branchContainer.appendChild(path);
+
+    const length = path.getTotalLength();
+    path.style.strokeDasharray = length;
+    path.style.strokeDashoffset = length;
+
+    branches.push({ path, length, delay: strand * .16 });
+  }
+
+  for (let i = 0; i < 14; i++) {
+    const progress = .07 + i * .068;
+    const p = archPoint(progress, i % 4, side);
+    const next = archPoint(progress + .002, i % 4, side);
+
+    const angle = Math.atan2(next.y - p.y, next.x - p.x);
+    const outward = side === -1 ? -1 : 1;
+    const size = 24 + (i % 4) * 5;
+
+    const group = node("g", {
+      transform:
+        `translate(${p.x} ${p.y}) rotate(${angle * 180 / Math.PI})`
+    });
+
+    const path = node("path", {
+      d:
+        `M0 0 ` +
+        `C8 ${outward * -10},20 ${outward * -size},34 ${outward * size} ` +
+        `C47 ${outward * -size},48 ${outward * (size - 15)},` +
+        `37 ${outward * (size - 12)}`,
+      fill: "none",
+      stroke: "#ffdcaa",
+      "stroke-width": 1.1,
+      "stroke-linecap": "round"
+    });
+
+    group.appendChild(path);
+    shootContainer.appendChild(group);
+
+    const length = path.getTotalLength();
+    path.style.strokeDasharray = length;
+    path.style.strokeDashoffset = length;
+
+    shoots.push({
+      path,
+      length,
+      start: .5 + progress * 3.5
+    });
+
+    if (i % 2 === 0) {
+      const star = node("circle", {
+        cx: p.x,
+        cy: p.y,
+        r: 2.1,
+        fill: "#fff1cf",
+        opacity: 0
+      });
+
+      starContainer.appendChild(star);
+      vineStars.push({ star, start: .6 + progress * 3.5 });
+    }
+  }
+}
+
+function openGeometry(x, y, width) {
+  const length = Math.hypot(x, y);
+  const nx = -y / length;
+  const ny = x / length;
+
+  const point = (distance, spread) => [
+    x * distance + nx * width * spread,
+    y * distance + ny * width * spread
+  ];
+
+  return [
+    [0, 0],
+    point(.2, -.85),
+    point(.68, -1),
+    [x, y],
+    point(.68, 1),
+    point(.2, .85),
+    [0, 0]
+  ];
+}
+
+function budGeometry(x, y, width) {
+  return [
+    [0, 0],
+    [x * .25 - width * .82, -32],
+    [x - width, y * .79],
+    [x, y],
+    [x + width, y * .79],
+    [x * .25 + width * .82, -32],
+    [0, 0]
+  ];
+}
+
+function shape(points) {
+  return `M${points[0]}
+    C${points[1]} ${points[2]} ${points[3]}
+    C${points[4]} ${points[5]} ${points[6]}Z`;
+}
+
+function insetCurve(points, amount) {
+  const a = [
+    lerp(points[1][0], points[5][0], amount),
+    lerp(points[1][1], points[5][1], amount)
+  ];
+
+  const b = [
+    lerp(points[2][0], points[4][0], amount),
+    lerp(points[2][1], points[4][1], amount)
+  ];
+
+  return `M${points[0]} C${a} ${b} ${points[3]}`;
+}
+
+function reflection(points) {
+  const a = [
+    lerp(points[0][0], points[1][0], .45),
+    lerp(points[0][1], points[1][1], .45)
+  ];
+
+  const b = [
+    lerp(points[1][0], points[5][0], .12),
+    lerp(points[1][1], points[5][1], .12)
+  ];
+
+  const c = [
+    lerp(points[2][0], points[4][0], .15),
+    lerp(points[2][1], points[4][1], .15)
+  ];
+
+  const end = [
+    lerp(points[3][0], points[2][0], .2),
+    lerp(points[3][1], points[2][1], .2)
+  ];
+
+  return `M${a} C${b} ${c} ${end}`;
+}
+
+const petals = [];
+const backPetals = document.getElementById("backPetals");
+const frontPetals = document.getElementById("frontPetals");
+
+const designs = [
+  [   0, -302, 66, "pinkGlass",  1.0, false],
+  [-145, -281, 57, "blueGlass",   .7, false],
+  [ 145, -281, 57, "blueGlass",   .7, false],
+  [ -83, -266, 59, "pinkGlass",  1.2, false],
+  [  83, -266, 59, "pinkGlass",  1.2, false],
+
+  [-294, -176, 59, "blueGlass",   0, false],
+  [ 294, -176, 59, "blueGlass",   0, false],
+  [-216, -247, 62, "pinkGlass", .35, false],
+  [ 216, -247, 62, "pinkGlass", .35, false],
+
+  [-121, -230, 69, "pinkGlass", 1.45, false],
+  [ 121, -230, 69, "pinkGlass", 1.45, false],
+  [   0, -235, 76, "pearlGlass", 1.7, false],
+
+  [-313,  -37, 54, "blueGlass",  .2, true],
+  [ 313,  -37, 54, "blueGlass",  .2, true],
+  [-235,   15, 59, "pinkGlass",  .6, true],
+  [ 235,   15, 59, "pinkGlass",  .6, true],
+  [-158,   37, 53, "blueGlass", 1.0, true],
+  [ 158,   37, 53, "blueGlass", 1.0, true],
+
+  [ -73, -131, 46, "pearlGlass", 2.0, false],
+  [  73, -131, 46, "pearlGlass", 2.0, false],
+  [   0,  -65, 67, "pinkGlass",  2.3, true]
+];
+
+designs.forEach(([x, y, width, material, delay, front], index) => {
+  const group = node("g");
+
+  const glow = node("path", {
+    fill: "none",
+    stroke: "#ffafd9",
+    "stroke-width": 4,
+    opacity: .23,
+    filter: "url(#softEdge)"
+  });
+
+  const body = node("path", {
+    fill: `url(#${material})`,
+    stroke: "url(#edge)",
+    "stroke-width": 1.25,
+    "stroke-linejoin": "round"
+  });
+
+  const shine = node("path", {
+    fill: "none",
+    stroke: "url(#reflection)",
+    "stroke-width": material === "blueGlass" ? 3.8 : 2,
+    "stroke-linecap": "round",
+    opacity: .75,
+    filter: "url(#shineGlow)"
+  });
+
+  const veins = [.3, .5, .7].map(amount => {
+    const path = node("path", {
+      fill: "none",
+      stroke: "#ffe1f0",
+      "stroke-width": .65,
+      opacity: amount === .5 ? .22 : .12
+    });
+
+    return { path, amount };
+  });
+
+  const tip = node("circle", {
+    r: front ? 1.6 : 2,
+    fill: "#fff5e9",
+    filter: "url(#goldGlow)"
+  });
+
+  group.append(glow, body, shine);
+  veins.forEach(vein => group.appendChild(vein.path));
+  group.appendChild(tip);
+
+  (front ? frontPetals : backPetals).appendChild(group);
+
+  const budX = x * .07;
+  const budY = -164 - (index % 4) * 7;
+  const budWidth = front ? 27 : 33 + (index % 3) * 4;
+
+  petals.push({
+    glow, body, shine, veins, tip,
+    group,
+    delay,
+    closed: budGeometry(budX, budY, budWidth),
+    opened: openGeometry(x, y, width)
+  });
+});
+
+const stamenContainer = document.getElementById("stamens");
+
+for (let i = -4; i <= 4; i++) {
+  const x = i * 5;
+  const y = -94 + Math.abs(i) * 6;
+
+  stamenContainer.appendChild(node("path", {
+    d: `M${x - .35} -20 Q${x + 1.3} -55 ${x} ${y}`,
+    fill: "none",
+    stroke: "#fff0b9",
+    "stroke-width": .9,
+    opacity: .7
+  }));
+
+  stamenContainer.appendChild(node("ellipse", {
+    cx: x,
+    cy: y,
+    rx: 1.5,
+    ry: 2.7,
+    fill: "#fff1bf",
+    opacity: .85
+  }));
+}
+
+function createDust(id, count, foreground) {
+  const container = document.getElementById(id);
+
+  for (let i = 0; i < count; i++) {
+    const x = 55 + Math.random() * 790;
+    const y = 85 + Math.random() * 640;
+    const radius = .6 + Math.random() * (foreground ? 1.8 : 1.1);
+
+    const motion = node("g", { class: "dust-motion" });
+    motion.style.setProperty("--duration", `${11 + Math.random() * 14}s`);
+    motion.style.setProperty("--delay", `${-Math.random() * 30}s`);
+    motion.style.setProperty("--drift", `${Math.random() * 55 - 27}px`);
+
+    const light = node("g", { class: "dust-light" });
+    light.style.setProperty("--twinkle", `${1.0 + Math.random() * 2.2}s`);
+
+    light.appendChild(node("circle", {
+      cx: x,
+      cy: y,
+      r: radius,
+      fill: foreground ? "#fff9e6" : "#ffcef2",
+      opacity: foreground ? .95 : .7,
+      filter: "url(#goldGlow)"
+    }));
+
+    if (foreground && i % 4 === 0) {
+      const arm = radius * 4.5;
+
+      light.appendChild(node("path", {
+        d: `M${x - arm} ${y} H${x + arm}
+            M${x} ${y - arm} V${y + arm}`,
+        stroke: "#fffcee",
+        "stroke-width": .8,
+        "stroke-linecap": "round",
+        filter: "url(#goldGlow)"
+      }));
+    }
+
+    motion.appendChild(light);
+    container.appendChild(motion);
+  }
+}
+
+createDust("backDust", 95, false);
+createDust("frontDust", 55, true);
+
+const wreath = document.getElementById("wreath");
+const camera = document.getElementById("camera");
+const rise = document.getElementById("rise");
+const core = document.getElementById("core");
+const sepals = document.getElementById("sepals");
+const aura = document.getElementById("flowerAura");
+const floorGlow = document.getElementById("floorGlow");
+
+let animationFrame;
+let startedAt;
+
+function render(time) {
+  wordSpans.forEach((wordSpan, idx) => {
+    const showTime = 0.8 + idx * 0.95;
+    if (time >= showTime) {
+      wordSpan.classList.add("visible");
+    } else {
+      wordSpan.classList.remove("visible");
+    }
+  });
+
+  branches.forEach(branch => {
+    const growth = phase(time, branch.delay, 2.8);
+    branch.path.style.strokeDashoffset =
+      branch.length * (1 - growth);
+  });
+
+  shoots.forEach(shoot => {
+    const growth = phase(time, shoot.start, 0.7);
+    shoot.path.style.strokeDashoffset =
+      shoot.length * (1 - growth);
+  });
+
+  vineStars.forEach(({ star, start }) => {
+    const appear = phase(time, start, .4);
+    const shimmer = .72 + Math.sin(time * 2.5 + start) * .2;
+    star.setAttribute("opacity", appear * shimmer);
+  });
+
+  const emergence = phase(time, 2.8, 1.2);
+  rise.setAttribute(
+    "transform",
+    `translate(0 ${lerp(240, 0, emergence)})`
+  );
+  rise.setAttribute("opacity", emergence);
+
+  const closeup = phase(time, 8.5, 3.5);
+  const zoom = lerp(1, 1.18, closeup);
+
+  camera.setAttribute(
+    "transform",
+    `translate(450 435) scale(${zoom})
+     translate(-450 -435)`
+  );
+
+  wreath.setAttribute(
+    "opacity",
+    lerp(1, .045, closeup)
+  );
+
+  const overallBloom = phase(time, 4.2, 4.2);
+  const coreStrength = phase(time, 3.8, 3.5);
+
+  core.setAttribute(
+    "opacity",
+    lerp(.24, .95, coreStrength)
+  );
+
+  stamenContainer.setAttribute(
+    "opacity",
+    phase(time, 5.2, 2.5)
+  );
+
+  aura.setAttribute(
+    "opacity",
+    lerp(.12, .32, coreStrength)
+  );
+
+  sepals.setAttribute(
+    "opacity",
+    lerp(.9, .28, overallBloom)
+  );
+
+  floorGlow.setAttribute(
+    "opacity",
+    emergence * .8
+  );
+
+  petals.forEach(petal => {
+    const opening = phase(time, 4.2 + (petal.delay * 0.6), 3.5);
+
+    const points = petal.closed.map((point, index) => [
+      lerp(point[0], petal.opened[index][0], opening),
+      lerp(point[1], petal.opened[index][1], opening)
+    ]);
+
+    const d = shape(points);
+    petal.body.setAttribute("d", d);
+    petal.glow.setAttribute("d", d);
+    petal.shine.setAttribute("d", reflection(points));
+
+    petal.veins.forEach(vein => {
+      vein.path.setAttribute(
+        "d",
+        insetCurve(points, vein.amount)
+      );
+    });
+
+    petal.tip.setAttribute("cx", points[3][0]);
+    petal.tip.setAttribute("cy", points[3][1]);
+    petal.tip.setAttribute(
+      "opacity",
+      lerp(.18, .85, opening)
+    );
+
+    petal.shine.setAttribute(
+      "opacity",
+      lerp(.18, .78, opening)
+    );
   });
 }
 
-// Animation loop
-function animate(now) {
-  requestAnimationFrame(animate);
+function replay() {
+  cancelAnimationFrame(animationFrame);
 
-  const dt = Math.min((now - previous) / 1000, 0.05);
-  previous = now;
-
-  if (playing) {
-    time += dt;
-    elapsed += dt;
-    progress = THREE.MathUtils.clamp(
-      (elapsed - INITIAL_HOLD_SECONDS) / BLOOM_SECONDS,
-      0,
-      1
-    );
-    slider.value = String(progress);
+  if (reducedMotion.matches) {
+    wordSpans.forEach(span => span.classList.add("visible"));
+    render(12);
+    return;
   }
 
-  uniforms.uTime.value = time;
-  uniforms.uProgress.value = progress;
+  startedAt = performance.now();
+  render(0);
 
-  updateWords(progress);
+  function frame(now) {
+    const time = (now - startedAt) / 1000;
+    render(time);
 
-  phaseLabel.textContent =
-    progress < 0.08 ? 'Hanging bud' :
-    progress < 0.30 ? 'Awakening' :
-    progress < 0.58 ? 'Unfurling' :
-    progress < 0.94 ? 'Opening heart' :
-                      'Full bloom';
+    if (time < 12) {
+      animationFrame = requestAnimationFrame(frame);
+    }
+  }
 
-  controls.update();
-  composer.render(dt);
+  animationFrame = requestAnimationFrame(frame);
 }
 
-requestAnimationFrame(animate);
+document.querySelector(".replay").addEventListener("click", replay);
+
+replay();
 </script>
 </body>
 </html>
